@@ -85,6 +85,8 @@
         <div>Recall: <span class="metric" id="mRec">–</span></div>
         <div>F1: <span class="metric" id="mF1">–</span></div>
         <div>ROC AUC: <span class="metric" id="mAUC">–</span></div>
+        <div>Accuracy: <span class="metric" id="mAcc">–</span></div>
+
       </div>
       <div class="row" style="margin-top:10px">
         <label class="small">Threshold</label>
@@ -154,6 +156,7 @@
       elPrec: document.getElementById('mPrec'),
       elRec: document.getElementById('mRec'),
       elF1: document.getElementById('mF1'),
+      elAcc: document.getElementById('mAcc'),
       elAUC: document.getElementById('mAUC'),
       cmTN: document.getElementById('cmTN'),
       cmFP: document.getElementById('cmFP'),
