@@ -120,64 +120,66 @@
     </div>
   </div>
 
-  <script type="module">
-    import { DataLoader } from './data-loader.js';
-    import { GRUClassifier } from './gru.js';
-    import { App } from './app.js';
+<script type="module">
+  import { DataLoader } from './data-loader.js';
+  import { GRUClassifier } from './gru.js';
+  import { App } from './app.js';
 
-    const dl = new DataLoader({log: logLine});
-    const model = new GRUClassifier({log: logLine});
+  const dl = new DataLoader({log: logLine});
+  const model = new GRUClassifier({log: logLine});
 
-    const app = new App({ tf, Chart, dl, model, ui: {
-      csvFile: document.getElementById('csvFile'),
-      prepBtn: document.getElementById('prepBtn'),
-      edaBtn: document.getElementById('edaBtn'),
-      buildBtn: document.getElementById('buildBtn'),
-      trainBtn: document.getElementById('trainBtn'),
-      evalBtn: document.getElementById('evalBtn'),
-      saveBtn: document.getElementById('saveBtn'),
-      loadBtn: document.getElementById('loadBtn'),
-      resetBtn: document.getElementById('resetBtn'),
-      testSplit: document.getElementById('testSplit'),
-      epochs: document.getElementById('epochs'),
-      batchSize: document.getElementById('batchSize'),
-      lr: document.getElementById('lr'),
-      units: document.getElementById('units'),
-      layers: document.getElementById('layers'),
-      valSplit: document.getElementById('valSplit'),
-      patience: document.getElementById('patience'),
-      prog: document.getElementById('prog'),
-      // metrics + cm
-      elPrec: document.getElementById('mPrec'),
-      elRec: document.getElementById('mRec'),
-      elF1: document.getElementById('mF1'),
-      elAcc: document.getElementById('mAcc'),
-      elAUC: document.getElementById('mAUC'),
-      cmTN: document.getElementById('cmTN'),
-      cmFP: document.getElementById('cmFP'),
-      cmFN: document.getElementById('cmFN'),
-      cmTP: document.getElementById('cmTP'),
-      // charts
-      chartClassBalance: document.getElementById('classBalance'),
-      chartOvertime: document.getElementById('overtimeRate'),
-      chartCorr: document.getElementById('topCorr'),
-      lossChart: document.getElementById('lossChart'),
-      trainSummary: document.getElementById('trainSummary'),
-      edaText: document.getElementById('edaText'),
-      featReport: document.getElementById('featReport'),
-      // export + threshold
-      downloadBtn: document.getElementById('downloadBtn'),
-      thr: document.getElementById('thr'),
-      thrAuto: document.getElementById('thrAuto'),
-      
-    }});
+  const app = new App({ tf, Chart, dl, model, ui: {
+    csvFile: document.getElementById('csvFile'),
+    prepBtn: document.getElementById('prepBtn'),
+    edaBtn: document.getElementById('edaBtn'),
+    buildBtn: document.getElementById('buildBtn'),
+    trainBtn: document.getElementById('trainBtn'),
+    evalBtn: document.getElementById('evalBtn'),
+    saveBtn: document.getElementById('saveBtn'),
+    loadBtn: document.getElementById('loadBtn'),
+    resetBtn: document.getElementById('resetBtn'),
 
-    function logLine(msg) {
-      const el = document.getElementById('logs');
-      const t = new Date().toLocaleTimeString();
-      el.textContent += `[${t}] ${msg}\n`;
-      el.scrollTop = el.scrollHeight;
-    }
-  </script>
+    testSplit: document.getElementById('testSplit'),
+
+    epochs: document.getElementById('epochs'),
+    batchSize: document.getElementById('batchSize'),
+    lr: document.getElementById('lr'),
+    units: document.getElementById('units'),
+    layers: document.getElementById('layers'),
+    valSplit: document.getElementById('valSplit'),
+    patience: document.getElementById('patience'),
+    prog: document.getElementById('prog'),
+
+    elPrec: document.getElementById('mPrec'),
+    elRec: document.getElementById('mRec'),
+    elF1: document.getElementById('mF1'),
+    elAcc: document.getElementById('mAcc'),
+    elAUC: document.getElementById('mAUC'),
+    cmTN: document.getElementById('cmTN'),
+    cmFP: document.getElementById('cmFP'),
+    cmFN: document.getElementById('cmFN'),
+    cmTP: document.getElementById('cmTP'),
+
+    chartClassBalance: document.getElementById('classBalance'),
+    chartOvertime: document.getElementById('overtimeRate'),
+    chartCorr: document.getElementById('topCorr'),
+    lossChart: document.getElementById('lossChart'),
+    trainSummary: document.getElementById('trainSummary'),
+    edaText: document.getElementById('edaText'),
+    featReport: document.getElementById('featReport'),
+
+    downloadBtn: document.getElementById('downloadBtn'),
+    thr: document.getElementById('thr'),
+    thrAuto: document.getElementById('thrAuto'),
+  }});
+
+  function logLine(msg) {
+    const el = document.getElementById('logs');
+    const t = new Date().toLocaleTimeString();
+    el.textContent += `[${t}] ${msg}\n`;
+    el.scrollTop = el.scrollHeight;
+  }
+</script>
+
 </body>
 </html>
