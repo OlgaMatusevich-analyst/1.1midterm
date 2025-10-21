@@ -120,13 +120,43 @@ export class DataLoader {
       feats.push(v); labels.push(y);
     }
 
-    // детерминированная перетасовка и сплит
-    const idx = this.#deterministicShuffleIndex(feats.length);
-    const nTest = Math.max(1, Math.floor(feats.length * Math.min(Math.max(testSplit,0.05),0.9)));
-    const nTrain = feats.length - nTest;
+    // === STRATIFIED split: сохраняем долю "Yes" в train/test ===
+const posIdx = [], negIdx = [];
+for (let i = 0; i < feats.length; i++) {
+  (labels[i] === 1 ? posIdx : negIdx).push(i);
+}
 
-    const trainIdx = idx.slice(0, nTrain);
-    const testIdx  = idx.slice(nTrain);
+// детерминированно перемешаем каждую группу (фиксированный seed)
+const shuffle = (arr) => {
+  let seed = 1337;
+  const rand = () => (seed = (seed*1664525 + 1013904223) % 2**32) / 2**32;
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(rand() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+};
+shuffle(posIdx); shuffle(negIdx);
+
+// сколько всего уходит в test
+const nTest = Math.max(1, Math.floor(feats.length * Math.min(Math.max(testSplit, 0.05), 0.9)));
+
+// сколько позитивов держать в тесте (пропорционально общей доле)
+let testPos = Math.round(nTest * (posIdx.length / Math.max(1, feats.length)));
+testPos = Math.min(testPos, posIdx.length);
+testPos = Math.max(0, Math.min(testPos, nTest));
+
+// убедимся, что негативов хватит закрыть остаток
+let testNeg = nTest - testPos;
+if (testNeg > negIdx.length) {
+  testNeg = negIdx.length;
+  testPos = nTest - testNeg;
+}
+
+// финальные индексы
+const testIdx  = posIdx.slice(0, testPos).concat(negIdx.slice(0, testNeg));
+const trainIdx = posIdx.slice(testPos).concat(negIdx.slice(testNeg));
+
 
     let Xtr = trainIdx.map(i => feats[i]);
     let ytr = trainIdx.map(i => [labels[i]]);
