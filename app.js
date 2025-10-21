@@ -58,50 +58,21 @@ export class App {
   }
 
   async #prepare() {
-  try {
-    this.#progress(0);
+    try {
+      this.#progress(0);
+      const testSplit = Number(this.ui.testSplit.value) / 100 || 0.2;
 
-    // поддержка запятой в поле числа
-    const splitRaw = String(this.ui.testSplit.value ?? '20').replace(',', '.');
-    const testSplit = Number(splitRaw) / 100 || 0.2;
+      const augment = {
+        enable: !!this.ui.augEnable.checked,
+        targetRatio: Number(this.ui.augRatio.value) || 0.5,
+        noiseStd: Number(this.ui.augNoise.value) || 0.05
+      };
 
-    // dispose prev
-    this.dataset?.xTrain?.dispose?.(); this.dataset?.yTrain?.dispose?.();
-    this.dataset?.xTest?.dispose?.();  this.dataset?.yTest?.dispose?.();
+      // dispose prev
+      this.dataset?.xTrain?.dispose?.(); this.dataset?.yTrain?.dispose?.();
+      this.dataset?.xTest?.dispose?.();  this.dataset?.yTest?.dispose?.();
 
-    // готовим тензоры (без augment)
-    this.dataset = this.dl.prepareTensors({ testSplit });
-
-    // GRU ждёт [batch, 1, features]
-    const xTr3 = this.dataset.xTrain.expandDims(1);
-    const xTe3 = this.dataset.xTest.expandDims(1);
-    this.dataset.xTrain.dispose(); this.dataset.xTest.dispose();
-    this.dataset.xTrain = xTr3; this.dataset.xTest = xTe3;
-
-    // отчёт по фичам
-    const rep = this.dl.featureReport();
-    const mk = (title, arr) => `<tr><th>${title}</th><td>${arr.length}</td><td class="mono">${arr.join(', ')}</td></tr>`;
-    const desc = Object.entries(rep.createdDescriptions).map(([k,v])=>`<div><b>${k}</b>: ${v}</div>`).join('');
-    this.ui.featReport.innerHTML = `
-      <table>
-        <thead><tr><th>Group</th><th>#</th><th>Attributes</th></tr></thead>
-        <tbody>
-          ${mk('Kept (inputs)', rep.kept)}
-          ${mk('Dropped', rep.dropped)}
-          ${mk('Created (engineered)', rep.created)}
-        </tbody>
-      </table>
-      <div style="margin-top:8px">${desc}</div>
-    `;
-
-    this.ui.buildBtn.disabled = false;
-  } catch (e) {
-    alert(e.message || String(e));
-  }
-}
-
-
-
+      this.dataset = this.dl.prepareTensors({ testSplit, augment });
 
       // expand for GRU
       const xTr3 = this.dataset.xTrain.expandDims(1);
