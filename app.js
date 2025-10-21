@@ -128,6 +128,25 @@ export class App {
       this.#progress(0);
       const epochs = Math.max(1, Number(this.ui.epochs.value) | 0);
       const batchSize = Math.max(1, Number(this.ui.batchSize.value) | 0);
+// === class weights: повышаем вес позитивов ===
+const yArr = await this.dataset.yTrain.array();
+const pos = yArr.filter(r => r[0] === 1).length;
+const neg = yArr.length - pos;
+const w1 = neg / Math.max(1, pos);   // вес для класса 1 (Yes)
+const w0 = 1;                         // вес для класса 0 (No)
+const sampleWeight = tf.tensor1d(yArr.map(r => r[0] === 1 ? w1 : w0));
+
+// передай sampleWeight в fit:
+await this.model.fit({
+  xTrain: this.dataset.xTrain,
+  yTrain: this.dataset.yTrain,
+  epochs,
+  batchSize,
+  sampleWeight,                         // <---
+  onEpoch: (epoch, logs) => this.#progress((epoch+1)/epochs)
+});
+
+sampleWeight.dispose();
 
       await this.model.fit({
         xTrain: this.dataset.xTrain,
