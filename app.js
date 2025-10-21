@@ -61,22 +61,45 @@ export class App {
   try {
     this.#progress(0);
 
-    // поддержка запятой в локали
-    const splitNum = (typeof this.ui.testSplit.value === 'string'
-      ? this.ui.testSplit.value.replace(',', '.')
-      : this.ui.testSplit.value);
-    const testSplit = Number(splitNum) / 100 || 0.2;
+    // поддержка запятой в поле числа
+    const splitRaw = String(this.ui.testSplit.value ?? '20').replace(',', '.');
+    const testSplit = Number(splitRaw) / 100 || 0.2;
 
     // dispose prev
     this.dataset?.xTrain?.dispose?.(); this.dataset?.yTrain?.dispose?.();
     this.dataset?.xTest?.dispose?.();  this.dataset?.yTest?.dispose?.();
 
-    // БЕЗ augment:
+    // готовим тензоры (без augment)
     this.dataset = this.dl.prepareTensors({ testSplit });
 
-    // далее — как было (expandDims, отчёт фич и т.п.)
-  } catch (e) { alert(e.message || String(e)); }
+    // GRU ждёт [batch, 1, features]
+    const xTr3 = this.dataset.xTrain.expandDims(1);
+    const xTe3 = this.dataset.xTest.expandDims(1);
+    this.dataset.xTrain.dispose(); this.dataset.xTest.dispose();
+    this.dataset.xTrain = xTr3; this.dataset.xTest = xTe3;
+
+    // отчёт по фичам
+    const rep = this.dl.featureReport();
+    const mk = (title, arr) => `<tr><th>${title}</th><td>${arr.length}</td><td class="mono">${arr.join(', ')}</td></tr>`;
+    const desc = Object.entries(rep.createdDescriptions).map(([k,v])=>`<div><b>${k}</b>: ${v}</div>`).join('');
+    this.ui.featReport.innerHTML = `
+      <table>
+        <thead><tr><th>Group</th><th>#</th><th>Attributes</th></tr></thead>
+        <tbody>
+          ${mk('Kept (inputs)', rep.kept)}
+          ${mk('Dropped', rep.dropped)}
+          ${mk('Created (engineered)', rep.created)}
+        </tbody>
+      </table>
+      <div style="margin-top:8px">${desc}</div>
+    `;
+
+    this.ui.buildBtn.disabled = false;
+  } catch (e) {
+    alert(e.message || String(e));
+  }
 }
+
 
 
 
