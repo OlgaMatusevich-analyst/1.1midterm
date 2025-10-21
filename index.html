@@ -8,39 +8,38 @@
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.20.0/dist/tf.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <style>
-    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 24px; line-height: 1.4; }
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 24px; line-height: 1.45; }
     h1 { margin-bottom: 4px; }
     .sub { color:#6b7280; font-size: 14px; margin-bottom: 16px; }
-    .grid { display:grid; gap:16px; grid-template-columns: repeat(auto-fit, minmax(320px,1fr)); }
+    .grid { display:grid; gap:16px; grid-template-columns: repeat(auto-fit, minmax(340px,1fr)); }
     .card { border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,.04); }
     button { padding: 8px 14px; border-radius: 10px; border: 1px solid #e5e7eb; background: #111827; color: #fff; cursor: pointer; }
     button[disabled] { opacity:.5; cursor:not-allowed; }
     input[type="file"] { padding:6px }
-    table { border-collapse: collapse; width: 100%; }
-    th, td { border: 1px solid #e5e7eb; padding: 6px 8px; text-align: center; }
+    table { border-collapse: collapse; width: 100%; font-size: 14px; }
+    th, td { border: 1px solid #e5e7eb; padding: 6px 8px; text-align: left; }
     progress { width:100%; height:14px; }
     #logs { white-space: pre-wrap; max-height: 260px; overflow:auto; background:#0b1020; color:#e5e7eb; padding:12px; border-radius:8px; }
     .metric { font-weight:600 }
     .small { font-size:12px; color:#6b7280 }
     .pill { display:inline-block; padding:2px 8px; border-radius:999px; background:#eef2ff; color:#3730a3; font-size:12px }
     .row { display:flex; gap:8px; flex-wrap:wrap; align-items:center }
+    .kpi { display:grid; grid-template-columns: repeat(2, minmax(120px,1fr)); gap:8px; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
   </style>
 </head>
 <body>
   <h1>Attrition Prediction</h1>
-  <div class="sub">Загрузи CSV IBM HR Attrition → EDA → обучи GRU (1 таймстеп) в браузере → метрики, подбор порога, экспорт предсказаний.</div>
+  <div class="sub">CSV → EDA → фичеринж → GRU/NN → метрики и выгрузка предсказаний. Вся логика — в браузере.</div>
 
   <div class="grid">
     <div class="card">
-      <h3>1) Data & EDA</h3>
+      <h3>1) Data, EDA & Feature Engineering</h3>
       <input id="csvFile" type="file" accept=".csv,text/csv" />
-      <div style="margin-top:8px">
+      <div class="row" style="margin-top:8px">
         <label>Test split (%)</label>
-        <input id="testSplit" type="number" min="10" max="50" value="20" style="width:64px;margin-left:6px" />
-      </div>
-      <!-- NEW: Augmentation controls -->
-      <div style="margin-top:8px" class="row">
-        <label><input id="augEnable" type="checkbox"> Augment minority (Yes)</label>
+        <input id="testSplit" type="number" min="10" max="50" value="20" style="width:64px" />
+        <label style="margin-left:8px"><input id="augEnable" type="checkbox"> Augment minority (Yes)</label>
         <label>Target pos ratio</label>
         <input id="augRatio" type="number" step="0.05" min="0.20" max="0.80" value="0.50" style="width:72px" />
         <label>Noise std</label>
@@ -55,13 +54,15 @@
     </div>
 
     <div class="card">
-      <h3>2) Train</h3>
+      <h3>2) Model & Training</h3>
       <div class="row">
-        <div><label>Epochs</label><br/><input id="epochs" type="number" value="30" min="1" max="300" style="width:90px"/></div>
-        <div><label>Batch</label><br/><input id="batchSize" type="number" value="32" min="1" max="512" style="width:90px"/></div>
+        <div><label>Epochs</label><br/><input id="epochs" type="number" value="45" min="1" max="300" style="width:90px"/></div>
+        <div><label>Batch</label><br/><input id="batchSize" type="number" value="16" min="1" max="512" style="width:90px"/></div>
         <div><label>LR</label><br/><input id="lr" type="number" value="0.001" step="0.0001" style="width:110px"/></div>
-        <div><label>GRU units</label><br/><input id="units" type="number" value="64" min="8" max="256" style="width:110px"/></div>
+        <div><label>GRU units</label><br/><input id="units" type="number" value="128" min="8" max="256" style="width:110px"/></div>
         <div><label>GRU layers</label><br/><input id="layers" type="number" value="1" min="1" max="3" style="width:90px"/></div>
+        <div><label>Val. split</label><br/><input id="valSplit" type="number" value="0.2" step="0.05" min="0.05" max="0.4" style="width:90px"/></div>
+        <div><label>Early stop patience</label><br/><input id="patience" type="number" value="6" min="2" max="20" style="width:110px"/></div>
       </div>
       <div class="row" style="margin-top:10px">
         <button id="buildBtn" disabled>Build Model</button>
@@ -79,14 +80,15 @@
 
     <div class="card">
       <h3>3) Metrics & Export</h3>
-      <div>Binary Accuracy: <span class="metric" id="mAcc">–</span></div>
-      <div>Precision: <span class="metric" id="mPrec">–</span></div>
-      <div>Recall: <span class="metric" id="mRec">–</span></div>
-      <div>F1: <span class="metric" id="mF1">–</span></div>
-      <div>ROC AUC: <span class="metric" id="mAUC">–</span></div>
+      <div class="kpi">
+        <div>Precision: <span class="metric" id="mPrec">–</span></div>
+        <div>Recall: <span class="metric" id="mRec">–</span></div>
+        <div>F1: <span class="metric" id="mF1">–</span></div>
+        <div>ROC AUC: <span class="metric" id="mAUC">–</span></div>
+      </div>
       <div class="row" style="margin-top:10px">
         <label class="small">Threshold</label>
-        <input id="thr" type="number" min="0.10" max="0.90" step="0.01" value="0.50" style="width:90px">
+        <input id="thr" type="number" min="0.10" max="0.90" step="0.01" value="0.50" style="width:90px" class="mono">
         <button id="thrAuto">Max F1</button>
         <button id="downloadBtn" disabled>Download Predictions</button>
       </div>
@@ -104,9 +106,16 @@
   <div class="grid" style="margin-top:16px">
     <div class="card">
       <h3>EDA Charts</h3>
-      <canvas id="classBalance" height="220"></canvas>
-      <canvas id="overtimeRate" height="220" style="margin-top:16px"></canvas>
-      <canvas id="topCorr" height="220" style="margin-top:16px"></canvas>
+      <canvas id="classBalance" height="210"></canvas>
+      <canvas id="overtimeRate" height="210" style="margin-top:16px"></canvas>
+      <canvas id="topCorr" height="210" style="margin-top:16px"></canvas>
+    </div>
+    <div class="card">
+      <h3>Training Loss</h3>
+      <canvas id="lossChart" height="260"></canvas>
+      <div class="small" id="trainSummary" style="margin-top:8px"></div>
+      <h3 style="margin-top:16px">Feature Report</h3>
+      <div id="featReport" class="small"></div>
     </div>
     <div class="card">
       <h3>Logs</h3>
@@ -138,10 +147,10 @@
       lr: document.getElementById('lr'),
       units: document.getElementById('units'),
       layers: document.getElementById('layers'),
+      valSplit: document.getElementById('valSplit'),
+      patience: document.getElementById('patience'),
       prog: document.getElementById('prog'),
-      dataStatus: document.getElementById('dataStatus'),
       // metrics + cm
-      elAcc: document.getElementById('mAcc'),
       elPrec: document.getElementById('mPrec'),
       elRec: document.getElementById('mRec'),
       elF1: document.getElementById('mF1'),
@@ -154,7 +163,10 @@
       chartClassBalance: document.getElementById('classBalance'),
       chartOvertime: document.getElementById('overtimeRate'),
       chartCorr: document.getElementById('topCorr'),
+      lossChart: document.getElementById('lossChart'),
+      trainSummary: document.getElementById('trainSummary'),
       edaText: document.getElementById('edaText'),
+      featReport: document.getElementById('featReport'),
       // export + threshold
       downloadBtn: document.getElementById('downloadBtn'),
       thr: document.getElementById('thr'),
