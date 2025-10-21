@@ -39,6 +39,11 @@
       <div class="row" style="margin-top:8px">
         <label>Test split (%)</label>
         <input id="testSplit" type="number" min="10" max="50" value="20" style="width:64px" />
+        <label style="margin-left:8px"><input id="augEnable" type="checkbox"> Augment minority (Yes)</label>
+        <label>Target pos ratio</label>
+        <input id="augRatio" type="number" step="0.05" min="0.20" max="0.80" value="0.50" style="width:72px" />
+        <label>Noise std</label>
+        <input id="augNoise" type="number" step="0.01" min="0.00" max="0.20" value="0.05" style="width:72px" />
       </div>
       <div class="row" style="margin-top:8px">
         <button id="prepBtn" disabled>Prepare Dataset</button>
@@ -120,43 +125,15 @@
     </div>
   </div>
 
-<script type="module">
-  import { DataLoader } from './data-loader.js';
-  import { GRUClassifier } from './gru.js';
-  import { App } from './app.js';
+  <script type="module">
+    import { DataLoader } from './data-loader.js';
+    import { GRUClassifier } from './gru.js';
+    import { App } from './app.js';
 
-  function logLine(msg) {
-    const el = document.getElementById('logs');
-    const t = new Date().toLocaleTimeString();
-    el.textContent += `[${t}] ${msg}\n`;
-    el.scrollTop = el.scrollHeight;
-  }
+    const dl = new DataLoader({log: logLine});
+    const model = new GRUClassifier({log: logLine});
 
-  // Глобальный перехват ошибок чтобы видеть их в Logs
-  window.addEventListener('error', (e) => logLine(`ERROR: ${e.message}`));
-  window.addEventListener('unhandledrejection', (e) => logLine(`PROMISE ERROR: ${e.reason}`));
-
-  // Проверяем, что ключевые узлы существуют
-  const must = [
-    'csvFile','prepBtn','edaBtn','buildBtn','trainBtn','evalBtn',
-    'saveBtn','loadBtn','resetBtn','testSplit','epochs','batchSize',
-    'lr','units','layers','valSplit','patience','prog','mPrec','mRec',
-    'mF1','mAcc','mAUC','cmTN','cmFP','cmFN','cmTP','classBalance',
-    'overtimeRate','topCorr','lossChart','trainSummary','edaText',
-    'featReport','downloadBtn','thr','thrAuto'
-  ];
-  for (const id of must) {
-    if (!document.getElementById(id)) {
-      logLine(`ERROR: element #${id} not found`);
-    }
-  }
-
-  const dl = new DataLoader({ log: logLine });
-  const model = new GRUClassifier({ log: logLine });
-
-  const app = new App({
-    tf, Chart, dl, model,
-    ui: {
+    const app = new App({ tf, Chart, dl, model, ui: {
       csvFile: document.getElementById('csvFile'),
       prepBtn: document.getElementById('prepBtn'),
       edaBtn: document.getElementById('edaBtn'),
@@ -166,9 +143,7 @@
       saveBtn: document.getElementById('saveBtn'),
       loadBtn: document.getElementById('loadBtn'),
       resetBtn: document.getElementById('resetBtn'),
-
       testSplit: document.getElementById('testSplit'),
-
       epochs: document.getElementById('epochs'),
       batchSize: document.getElementById('batchSize'),
       lr: document.getElementById('lr'),
@@ -177,7 +152,7 @@
       valSplit: document.getElementById('valSplit'),
       patience: document.getElementById('patience'),
       prog: document.getElementById('prog'),
-
+      // metrics + cm
       elPrec: document.getElementById('mPrec'),
       elRec: document.getElementById('mRec'),
       elF1: document.getElementById('mF1'),
@@ -187,7 +162,7 @@
       cmFP: document.getElementById('cmFP'),
       cmFN: document.getElementById('cmFN'),
       cmTP: document.getElementById('cmTP'),
-
+      // charts
       chartClassBalance: document.getElementById('classBalance'),
       chartOvertime: document.getElementById('overtimeRate'),
       chartCorr: document.getElementById('topCorr'),
@@ -195,16 +170,22 @@
       trainSummary: document.getElementById('trainSummary'),
       edaText: document.getElementById('edaText'),
       featReport: document.getElementById('featReport'),
-
+      // export + threshold
       downloadBtn: document.getElementById('downloadBtn'),
       thr: document.getElementById('thr'),
       thrAuto: document.getElementById('thrAuto'),
+      // augmentation controls
+      augEnable: document.getElementById('augEnable'),
+      augRatio: document.getElementById('augRatio'),
+      augNoise: document.getElementById('augNoise'),
+    }});
+
+    function logLine(msg) {
+      const el = document.getElementById('logs');
+      const t = new Date().toLocaleTimeString();
+      el.textContent += `[${t}] ${msg}\n`;
+      el.scrollTop = el.scrollHeight;
     }
-  });
-
-  logLine('App initialized');
-</script>
-
-
+  </script>
 </body>
 </html>
