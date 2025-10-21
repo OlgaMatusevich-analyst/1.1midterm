@@ -39,11 +39,6 @@
       <div class="row" style="margin-top:8px">
         <label>Test split (%)</label>
         <input id="testSplit" type="number" min="10" max="50" value="20" style="width:64px" />
-        <label style="margin-left:8px"><input id="augEnable" type="checkbox"> Augment minority (Yes)</label>
-        <label>Target pos ratio</label>
-        <input id="augRatio" type="number" step="0.05" min="0.20" max="0.80" value="0.50" style="width:72px" />
-        <label>Noise std</label>
-        <input id="augNoise" type="number" step="0.01" min="0.00" max="0.20" value="0.05" style="width:72px" />
       </div>
       <div class="row" style="margin-top:8px">
         <button id="prepBtn" disabled>Prepare Dataset</button>
@@ -174,10 +169,7 @@
       downloadBtn: document.getElementById('downloadBtn'),
       thr: document.getElementById('thr'),
       thrAuto: document.getElementById('thrAuto'),
-      // augmentation controls
-      augEnable: document.getElementById('augEnable'),
-      augRatio: document.getElementById('augRatio'),
-      augNoise: document.getElementById('augNoise'),
+      
     }});
 
     function logLine(msg) {
