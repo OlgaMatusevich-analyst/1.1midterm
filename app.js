@@ -60,19 +60,19 @@ export class App {
   async #prepare() {
     try {
       this.#progress(0);
-      const testSplit = Number(this.ui.testSplit.value) / 100 || 0.2;
+      // нормализуем число на случай запятой
+const splitNum = (typeof this.ui.testSplit.value === 'string'
+  ? this.ui.testSplit.value.replace(',', '.')
+  : this.ui.testSplit.value);
 
-      const augment = {
-        enable: !!this.ui.augEnable.checked,
-        targetRatio: Number(this.ui.augRatio.value) || 0.5,
-        noiseStd: Number(this.ui.augNoise.value) || 0.05
-      };
+const testSplit = Number(splitNum) / 100 || 0.2;
 
-      // dispose prev
-      this.dataset?.xTrain?.dispose?.(); this.dataset?.yTrain?.dispose?.();
-      this.dataset?.xTest?.dispose?.();  this.dataset?.yTest?.dispose?.();
+// dispose prev
+this.dataset?.xTrain?.dispose?.(); this.dataset?.yTrain?.dispose?.();
+this.dataset?.xTest?.dispose?.();  this.dataset?.yTest?.dispose?.();
 
-      this.dataset = this.dl.prepareTensors({ testSplit, augment });
+this.dataset = this.dl.prepareTensors({ testSplit }); // <— БЕЗ augment
+
 
       // expand for GRU
       const xTr3 = this.dataset.xTrain.expandDims(1);
