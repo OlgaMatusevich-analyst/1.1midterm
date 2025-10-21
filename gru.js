@@ -99,4 +99,10 @@ export class GRUClassifier {
   dispose(){ if (this.model){ this.model.dispose(); this.model=null; } }
 
   async #rocAuc(yTrue, yProb){
-    const yt = (await yTrue.array()).map(r=>r[0]), yp = (await yPro
+    const yt = (await yTrue.array()).map(r=>r[0]), yp = (await yProb.array()).map(r=>r[0]);
+    const pairs = yp.map((p,i)=>({p,y:yt[i]})).sort((a,b)=>b.p-a.p);
+    let tp=0, fp=0; const P=yt.reduce((s,v)=>s+(v===1?1:0),0), N=yt.length-P;
+    const roc=[{fpr:0,tpr:0}]; for(const {y} of pairs){ if(y===1) tp++; else fp++; roc.push({fpr:fp/Math.max(1,N), tpr:tp/Math.max(1,P)}); }
+    roc.push({fpr:1,tpr:1}); let auc=0; for(let i=1;i<roc.length;i++){ const a=roc[i-1], b=roc[i]; auc+=(b.fpr-a.fpr)*(a.tpr+b.tpr)/2; } return Math.max(0, Math.min(1, auc));
+  }
+}
