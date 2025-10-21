@@ -125,61 +125,86 @@
   import { GRUClassifier } from './gru.js';
   import { App } from './app.js';
 
-  const dl = new DataLoader({log: logLine});
-  const model = new GRUClassifier({log: logLine});
-
-  const app = new App({ tf, Chart, dl, model, ui: {
-    csvFile: document.getElementById('csvFile'),
-    prepBtn: document.getElementById('prepBtn'),
-    edaBtn: document.getElementById('edaBtn'),
-    buildBtn: document.getElementById('buildBtn'),
-    trainBtn: document.getElementById('trainBtn'),
-    evalBtn: document.getElementById('evalBtn'),
-    saveBtn: document.getElementById('saveBtn'),
-    loadBtn: document.getElementById('loadBtn'),
-    resetBtn: document.getElementById('resetBtn'),
-
-    testSplit: document.getElementById('testSplit'),
-
-    epochs: document.getElementById('epochs'),
-    batchSize: document.getElementById('batchSize'),
-    lr: document.getElementById('lr'),
-    units: document.getElementById('units'),
-    layers: document.getElementById('layers'),
-    valSplit: document.getElementById('valSplit'),
-    patience: document.getElementById('patience'),
-    prog: document.getElementById('prog'),
-
-    elPrec: document.getElementById('mPrec'),
-    elRec: document.getElementById('mRec'),
-    elF1: document.getElementById('mF1'),
-    elAcc: document.getElementById('mAcc'),
-    elAUC: document.getElementById('mAUC'),
-    cmTN: document.getElementById('cmTN'),
-    cmFP: document.getElementById('cmFP'),
-    cmFN: document.getElementById('cmFN'),
-    cmTP: document.getElementById('cmTP'),
-
-    chartClassBalance: document.getElementById('classBalance'),
-    chartOvertime: document.getElementById('overtimeRate'),
-    chartCorr: document.getElementById('topCorr'),
-    lossChart: document.getElementById('lossChart'),
-    trainSummary: document.getElementById('trainSummary'),
-    edaText: document.getElementById('edaText'),
-    featReport: document.getElementById('featReport'),
-
-    downloadBtn: document.getElementById('downloadBtn'),
-    thr: document.getElementById('thr'),
-    thrAuto: document.getElementById('thrAuto'),
-  }});
-
   function logLine(msg) {
     const el = document.getElementById('logs');
     const t = new Date().toLocaleTimeString();
     el.textContent += `[${t}] ${msg}\n`;
     el.scrollTop = el.scrollHeight;
   }
+
+  // Глобальный перехват ошибок чтобы видеть их в Logs
+  window.addEventListener('error', (e) => logLine(`ERROR: ${e.message}`));
+  window.addEventListener('unhandledrejection', (e) => logLine(`PROMISE ERROR: ${e.reason}`));
+
+  // Проверяем, что ключевые узлы существуют
+  const must = [
+    'csvFile','prepBtn','edaBtn','buildBtn','trainBtn','evalBtn',
+    'saveBtn','loadBtn','resetBtn','testSplit','epochs','batchSize',
+    'lr','units','layers','valSplit','patience','prog','mPrec','mRec',
+    'mF1','mAcc','mAUC','cmTN','cmFP','cmFN','cmTP','classBalance',
+    'overtimeRate','topCorr','lossChart','trainSummary','edaText',
+    'featReport','downloadBtn','thr','thrAuto'
+  ];
+  for (const id of must) {
+    if (!document.getElementById(id)) {
+      logLine(`ERROR: element #${id} not found`);
+    }
+  }
+
+  const dl = new DataLoader({ log: logLine });
+  const model = new GRUClassifier({ log: logLine });
+
+  const app = new App({
+    tf, Chart, dl, model,
+    ui: {
+      csvFile: document.getElementById('csvFile'),
+      prepBtn: document.getElementById('prepBtn'),
+      edaBtn: document.getElementById('edaBtn'),
+      buildBtn: document.getElementById('buildBtn'),
+      trainBtn: document.getElementById('trainBtn'),
+      evalBtn: document.getElementById('evalBtn'),
+      saveBtn: document.getElementById('saveBtn'),
+      loadBtn: document.getElementById('loadBtn'),
+      resetBtn: document.getElementById('resetBtn'),
+
+      testSplit: document.getElementById('testSplit'),
+
+      epochs: document.getElementById('epochs'),
+      batchSize: document.getElementById('batchSize'),
+      lr: document.getElementById('lr'),
+      units: document.getElementById('units'),
+      layers: document.getElementById('layers'),
+      valSplit: document.getElementById('valSplit'),
+      patience: document.getElementById('patience'),
+      prog: document.getElementById('prog'),
+
+      elPrec: document.getElementById('mPrec'),
+      elRec: document.getElementById('mRec'),
+      elF1: document.getElementById('mF1'),
+      elAcc: document.getElementById('mAcc'),
+      elAUC: document.getElementById('mAUC'),
+      cmTN: document.getElementById('cmTN'),
+      cmFP: document.getElementById('cmFP'),
+      cmFN: document.getElementById('cmFN'),
+      cmTP: document.getElementById('cmTP'),
+
+      chartClassBalance: document.getElementById('classBalance'),
+      chartOvertime: document.getElementById('overtimeRate'),
+      chartCorr: document.getElementById('topCorr'),
+      lossChart: document.getElementById('lossChart'),
+      trainSummary: document.getElementById('trainSummary'),
+      edaText: document.getElementById('edaText'),
+      featReport: document.getElementById('featReport'),
+
+      downloadBtn: document.getElementById('downloadBtn'),
+      thr: document.getElementById('thr'),
+      thrAuto: document.getElementById('thrAuto'),
+    }
+  });
+
+  logLine('App initialized');
 </script>
+
 
 </body>
 </html>
