@@ -219,17 +219,27 @@ export class App {
     a.href = url; a.download = `attrition_predictions_${ts}.csv`; a.click(); URL.revokeObjectURL(url);
   }
 
-  #renderMetrics({ prec, rec, f1, auc, cm }) {
-    const fmt = v => Number.isFinite(v) ? v.toFixed(4) : '–';
-    this.ui.elPrec.textContent = fmt(prec);
-    this.ui.elRec.textContent  = fmt(rec);
-    this.ui.elF1.textContent   = fmt(f1);
-    this.ui.elAUC.textContent  = fmt(auc);
-    this.ui.cmTN.textContent = cm.tn ?? '–';
-    this.ui.cmFP.textContent = cm.fp ?? '–';
-    this.ui.cmFN.textContent = cm.fn ?? '–';
-    this.ui.cmTP.textContent = cm.tp ?? '–';
-  }
+ #renderMetrics({ prec, rec, f1, auc, cm }) {
+  const fmt = v => Number.isFinite(v) ? v.toFixed(4) : '–';
+
+  // accuracy из матрицы ошибок
+  const total = (cm.tp ?? 0) + (cm.tn ?? 0) + (cm.fp ?? 0) + (cm.fn ?? 0);
+  const acc = total ? ((cm.tp ?? 0) + (cm.tn ?? 0)) / total : NaN;
+
+  // метрики
+  this.ui.elPrec.textContent = fmt(prec);
+  this.ui.elRec.textContent  = fmt(rec);
+  this.ui.elF1.textContent   = fmt(f1);
+  if (this.ui.elAcc) this.ui.elAcc.textContent = fmt(acc);  // <-- новая строка
+  this.ui.elAUC.textContent  = fmt(auc);
+
+  // матрица ошибок
+  this.ui.cmTN.textContent = cm.tn ?? '–';
+  this.ui.cmFP.textContent = cm.fp ?? '–';
+  this.ui.cmFN.textContent = cm.fn ?? '–';
+  this.ui.cmTP.textContent = cm.tp ?? '–';
+}
+
 
   #drawLoss() {
     if (!this.history) return;
