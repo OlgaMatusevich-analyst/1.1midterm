@@ -58,20 +58,26 @@ export class App {
   }
 
   async #prepare() {
-    try {
-      this.#progress(0);
-      // нормализуем число на случай запятой
-const splitNum = (typeof this.ui.testSplit.value === 'string'
-  ? this.ui.testSplit.value.replace(',', '.')
-  : this.ui.testSplit.value);
+  try {
+    this.#progress(0);
 
-const testSplit = Number(splitNum) / 100 || 0.2;
+    // поддержка запятой в локали
+    const splitNum = (typeof this.ui.testSplit.value === 'string'
+      ? this.ui.testSplit.value.replace(',', '.')
+      : this.ui.testSplit.value);
+    const testSplit = Number(splitNum) / 100 || 0.2;
 
-// dispose prev
-this.dataset?.xTrain?.dispose?.(); this.dataset?.yTrain?.dispose?.();
-this.dataset?.xTest?.dispose?.();  this.dataset?.yTest?.dispose?.();
+    // dispose prev
+    this.dataset?.xTrain?.dispose?.(); this.dataset?.yTrain?.dispose?.();
+    this.dataset?.xTest?.dispose?.();  this.dataset?.yTest?.dispose?.();
 
-this.dataset = this.dl.prepareTensors({ testSplit }); // <— БЕЗ augment
+    // БЕЗ augment:
+    this.dataset = this.dl.prepareTensors({ testSplit });
+
+    // далее — как было (expandDims, отчёт фич и т.п.)
+  } catch (e) { alert(e.message || String(e)); }
+}
+
 
 
       // expand for GRU
