@@ -117,10 +117,9 @@ export class DataLoader {
   }
 
   // ---------- Tensors & Split ----------
-  prepareTensors({ testSplit = 0.2 }) {
-  // никаких ссылок на augment / this._augCfg
-
-
+  prepareTensors({ testSplit = 0.2, augment = null }) {
+    if (!this.raw?.length) throw new Error('Dataset not loaded.');
+    this._augCfg = augment || { enable:false };
 
     // Fit categorical encoders for *real* categoricals
     this.#fitCategoricals(this.raw);
